@@ -1,1 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard | VentraIP Style</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #3b82f6;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #0f172a;
+        }
 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: white;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(90deg, white, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 18px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.95);
+            padding: 32px;
+            border-radius: 24px;
+            color: #1e293b;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--secondary));
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .stat-value {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card.human .stat-value { color: var(--success); }
+        .stat-card.bot .stat-value { color: var(--danger); }
+        .stat-card.total .stat-value { color: var(--secondary); }
+        .stat-card.rate .stat-value { color: var(--warning); }
+
+        .visits-table {
+            background: rgba(255,255,255,0.95);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .table-header {
+            background: #f8fafc;
+            padding: 24px 32px;
+            font-weight: 600;
+            color: #1e293b;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .clear-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .visit-row {
+            padding: 20px 32px;
+            border-bottom: 1px solid #f1f5f9;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 100px;
+            gap: 20px;
+            align-items: center;
+            color: #334155;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .visit-row:hover { background: #f8fafc; }
+
+        .timestamp { 
+            color: #64748b; 
+            font-size: 13px; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .timestamp strong {
+            color: #334155;
+            font-size: 14px;
+        }
+
+        .path { 
+            font-family: 'Courier New', monospace; 
+            background: #f1f5f9; 
+            padding: 6px 12px; 
+            border-radius: 8px;
+            font-size: 13px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .referrer {
+            color: #64748b;
+            font-size: 13px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .badge.human { background: #d1fae5; color: #065f46; }
+        .badge.bot { background: #fee2e2; color: #991b1b; }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #64748b;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 32px; }
+            .visit-row { 
+                grid-template-columns: 1fr; 
+                gap: 12px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Security Analytics Dashboard</h1>
+            <p class="subtitle">Real-time tracking and bot detection monitoring</p>
+        </header>
+
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="visits-table">
+            <div class="table-header">
+                <span>Recent Activity</span>
+                <button class="clear-btn" onclick="clearData()">Clear All Data</button>
+            </div>
+            <div id="visitsList"></div>
+        </div>
+    </div>
+
+    <script>
+        function loadStats() {
+            const visits = JSON.parse(localStorage.getItem('redirect_visits') || '[]');
+            const humans = visits.filter(v => !v.isBot);
+            const bots = visits.filter(v => v.isBot);
+            const successRate = visits.length > 0 ? ((humans.length / visits.length) * 100).toFixed(1) : 0;
+            
+            const last24h = visits.filter(v => {
+                const visitTime = new Date(v.timestamp).getTime();
+                return (Date.now() - visitTime) < (24 * 60 * 60 * 1000);
+            });
+
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card total">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-value">${visits.length}</div>
+                    <div class="stat-label">Total Visits</div>
+                </div>
+                <div class="stat-card human">
+                    <div class="stat-icon">👤</div>
+                    <div class="stat-value">${humans.length}</div>
+                    <div class="stat-label">Human Visitors</div>
+                </div>
+                <div class="stat-card bot">
+                    <div class="stat-icon">🤖</div>
+                    <div class="stat-value">${bots.length}</div>
+                    <div class="stat-label">Bots Blocked</div>
+                </div>
+                <div class="stat-card rate">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-value">${successRate}%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🕐</div>
+                    <div class="stat-value">${last24h.length}</div>
+                    <div class="stat-label">Last 24 Hours</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔒</div>
+                    <div class="stat-value">${bots.length > 0 ? ((bots.length/visits.length)*100).toFixed(1) : 0}%</div>
+                    <div class="stat-label">Threat Rate</div>
+                </div>
+            `;
+
+            const listContainer = document.getElementById('visitsList');
+            
+            if (visits.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <h3>No visits yet</h3>
+                        <p>Data will appear here once visitors start using your redirect links.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listContainer.innerHTML = visits.slice(0, 100).map(v => `
+                <div class="visit-row">
+                    <div class="timestamp">
+                        <strong>${new Date(v.timestamp).toLocaleDateString()}</strong>
+                        <span>${new Date(v.timestamp).toLocaleTimeString()}</span>
+                    </div>
+                    <div class="path" title="${v.path}">${v.path}</div>
+                    <div class="referrer" title="${v.referrer}">${v.referrer}</div>
+                    <span class="badge ${v.isBot ? 'bot' : 'human'}">
+                        ${v.isBot ? 'Bot' : 'Human'}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        function clearData() {
+            if (confirm('Are you sure you want to delete all analytics data?')) {
+                localStorage.removeItem('redirect_visits');
+                loadStats();
+            }
+        }
+
+        loadStats();
+        setInterval(loadStats, 10000);
+    </script>
+</body>
+</html>
