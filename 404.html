@@ -1,1 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Redirect | VentraIP Style</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'GA_MEASUREMENT_ID');
+    </script>
+    
+    <!-- reCAPTCHA v3 -->
+    <script src="https://www.google.com/recaptcha/api.js?render=YOUR_RECAPTCHA_SITE_KEY"></script>
+    
+    <style>
+        :root {
+            --primary-blue: #1e3a8a;
+            --secondary-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --dark-navy: #0f172a;
+            --light-bg: #f8fafc;
+            --white: #ffffff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-100: #f1f5f9;
+            --gray-600: #475569;
+            --gray-800: #1e293b;
+        }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--dark-navy) 0%, var(--primary-blue) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--white);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 48px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--secondary-blue), var(--primary-blue));
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--secondary-blue), var(--accent-cyan));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 32px;
+            font-size: 36px;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        h1 {
+            color: var(--gray-800);
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--gray-600);
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 40px;
+        }
+
+        .security-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--gray-100);
+            padding: 12px 24px;
+            border-radius: 50px;
+            margin-bottom: 32px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-800);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .security-status.verifying {
+            border-color: var(--warning);
+            background: #fffbeb;
+        }
+
+        .security-status.verified {
+            border-color: var(--success);
+            background: #ecfdf5;
+            color: var(--success);
+        }
+
+        .security-status.blocked {
+            border-color: var(--danger);
+            background: #fef2f2;
+            color: var(--danger);
+        }
+
+        .status-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .verifying .status-icon { background: var(--warning); }
+        .verified .status-icon { background: var(--success); }
+        .blocked .status-icon { background: var(--danger); }
+
+        .progress-container {
+            margin: 32px 0;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--gray-100);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--secondary-blue));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .countdown {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin: 24px 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .redirect-info {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border: 1px solid #bfdbfe;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 24px 0;
+            text-align: left;
+        }
+
+        .redirect-info p {
+            color: var(--gray-800);
+            font-size: 14px;
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .redirect-info strong {
+            color: var(--primary-blue);
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--secondary-blue), var(--primary-blue));
+            color: white;
+            padding: 16px 32px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            margin-top: 24px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 1px solid var(--gray-100);
+        }
+
+        .feature {
+            text-align: center;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 24px;
+        }
+
+        .feature-title {
+            color: var(--gray-800);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .blocked-card {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border: 2px solid var(--danger);
+        }
+
+        .blocked-card h1 {
+            color: var(--danger);
+        }
+
+        .stats-preview {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            font-size: 14px;
+            color: var(--gray-800);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--gray-100);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .stats-preview:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 640px) {
+            .card {
+                padding: 32px 24px;
+                margin: 16px;
+            }
+            
+            h1 { font-size: 24px; }
+            .countdown { font-size: 36px; }
+            .features { grid-template-columns: 1fr; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Verification Card -->
+        <div class="card" id="mainCard">
+            <div class="logo">🚀</div>
+            
+            <h1>Secure Redirect</h1>
+            <p class="subtitle">Please wait while we verify your connection</p>
+            
+            <div class="security-status verifying" id="securityStatus">
+                <span class="status-icon">⏳</span>
+                <span id="statusText">Verifying Security...</span>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="countdown" id="countdown">3</div>
+            
+            <div class="redirect-info">
+                <p>
+                    <span>🔒</span>
+                    <span>Protected by <strong>reCAPTCHA v3</strong></span>
+                </p>
+                <p>
+                    <span>🤖</span>
+                    <span>Bot Detection: <strong id="botStatus">Scanning...</strong></span>
+                </p>
+                <p>
+                    <span>📊</span>
+                    <span>Path: <strong id="currentPath">/</strong></span>
+                </p>
+            </div>
+            
+            <button class="btn-primary hidden" id="redirectBtn" onclick="manualRedirect()">
+                Continue to Website
+                <span>→</span>
+            </button>
+            
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🛡️</div>
+                    <div class="feature-title">Secure</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-title">Fast</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📈</div>
+                    <div class="feature-title">Tracked</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blocked Card (Hidden by default) -->
+        <div class="card blocked-card hidden" id="blockedCard">
+            <div class="logo" style="background: linear-gradient(135deg, #ef4444, #dc2626);">🚫</div>
+            
+            <h1>Access Denied</h1>
+            <p class="subtitle">Suspicious activity detected</p>
+            
+            <div class="security-status blocked">
+                <span class="status-icon">✕</span>
+                <span>Security Block</span>
+            </div>
+            
+            <div class="redirect-info" style="background: linear-gradient(135deg, #fef2f2, #fee2e2); border-color: #fecaca;">
+                <p>
+                    <span>🤖</span>
+                    <span>Bot detected: <strong>Yes</strong></span>
+                </p>
+                <p>
+                    <span>🚫</span>
+                    <span>Action: <strong>Blocked</strong></span>
+                </p>
+                <p>
+                    <span>📧</span>
+                    <span>If this is an error, contact support</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Preview Button -->
+    <a href="stats.html" class="stats-preview" id="statsBtn">
+        📊 View Analytics
+    </a>
+
+    <script>
+        // ========== CONFIGURATION ==========
+        const CONFIG = {
+            TARGET_URL: 'https://example.com', // CHANGE THIS TO YOUR TARGET URL
+            RECAPTCHA_SITE_KEY: 'YOUR_RECAPTCHA_SITE_KEY', // CHANGE THIS
+            GA_MEASUREMENT_ID: 'GA_MEASUREMENT_ID', // CHANGE THIS
+            DELAY_SECONDS: 3,
+            BOT_THRESHOLD: 0.3
+        };
+
+        // ========== BOT DETECTION ==========
+        class BotDetector {
+            static check() {
+                const signatures = [
+                    'bot', 'crawler', 'spider', 'scraper', 'curl', 'wget',
+                    'python', 'java', 'scrapy', 'phantomjs', 'selenium',
+                    'headless', 'puppeteer', 'playwright', 'webdriver'
+                ];
+
+                const ua = navigator.userAgent.toLowerCase();
+                const hasBotSignature = signatures.some(sig => ua.includes(sig));
+                
+                const checks = {
+                    noScreen: window.screen.width === 0 || window.screen.height === 0,
+                    noPlugins: navigator.plugins.length === 0,
+                    noLanguages: navigator.languages.length === 0,
+                    webdriver: navigator.webdriver === true,
+                    noTouch: 'ontouchstart' in window === false && navigator.maxTouchPoints === 0
+                };
+
+                const suspiciousCount = Object.values(checks).filter(Boolean).length;
+                const isBot = hasBotSignature || suspiciousCount >= 2;
+
+                return {
+                    isBot,
+                    score: isBot ? 0.1 : 0.9,
+                    checks,
+                    userAgent: navigator.userAgent
+                };
+            }
+        }
+
+        // ========== ANALYTICS ==========
+        class Analytics {
+            static track(data) {
+                const visit = {
+                    id: this.generateId(),
+                    timestamp: new Date().toISOString(),
+                    userAgent: navigator.userAgent,
+                    language: navigator.language,
+                    platform: navigator.platform,
+                    screen: `${window.screen.width}x${window.screen.height}`,
+                    viewport: `${window.innerWidth}x${window.innerHeight}`,
+                    referrer: document.referrer || 'direct',
+                    path: window.location.pathname + window.location.search,
+                    hash: window.location.hash,
+                    isBot: data.isBot,
+                    botScore: data.score,
+                    recaptchaScore: data.recaptchaScore || null
+                };
+
+                const visits = JSON.parse(localStorage.getItem('redirect_visits') || '[]');
+                visits.unshift(visit);
+                localStorage.setItem('redirect_visits', JSON.stringify(visits.slice(0, 1000)));
+
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'redirect_security_check', {
+                        event_category: 'security',
+                        event_label: data.isBot ? 'bot_blocked' : 'human_allowed',
+                        value: Math.round(data.score * 100)
+                    });
+                }
+
+                console.log('[Analytics]', visit);
+                return visit;
+            }
+
+            static generateId() {
+                return 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+        }
+
+        // ========== UI CONTROLLER ==========
+        class UIController {
+            static updateProgress(percent) {
+                document.getElementById('progressFill').style.width = percent + '%';
+            }
+
+            static updateCountdown(seconds) {
+                document.getElementById('countdown').textContent = seconds;
+            }
+
+            static updateStatus(status, text) {
+                const el = document.getElementById('securityStatus');
+                el.className = 'security-status ' + status;
+                document.getElementById('statusText').textContent = text;
+                
+                const icons = { verifying: '⏳', verified: '✓', blocked: '✕' };
+                el.querySelector('.status-icon').textContent = icons[status];
+            }
+
+            static updateBotStatus(text) {
+                document.getElementById('botStatus').textContent = text;
+            }
+
+            static showBlocked() {
+                document.getElementById('mainCard').classList.add('hidden');
+                document.getElementById('blockedCard').classList.remove('hidden');
+                document.getElementById('statsBtn').classList.add('hidden');
+            }
+
+            static showRedirectButton() {
+                document.getElementById('redirectBtn').classList.remove('hidden');
+            }
+
+            static setPath(path) {
+                document.getElementById('currentPath').textContent = path;
+            }
+        }
+
+        // ========== RECAPTCHA ==========
+        class ReCaptchaVerifier {
+            static async verify() {
+                return new Promise((resolve) => {
+                    if (typeof grecaptcha === 'undefined') {
+                        resolve({ success: true, score: 0.5, token: null });
+                        return;
+                    }
+
+                    grecaptcha.ready(() => {
+                        grecaptcha.execute(CONFIG.RECAPTCHA_SITE_KEY, { action: 'redirect' })
+                            .then(token => {
+                                resolve({ success: true, score: token ? 0.8 : 0.3, token });
+                            })
+                            .catch(err => {
+                                console.error('[reCAPTCHA]', err);
+                                resolve({ success: false, score: 0.2, token: null });
+                            });
+                    });
+                });
+            }
+        }
+
+        // ========== MAIN CONTROLLER ==========
+        class RedirectController {
+            constructor() {
+                this.botCheck = null;
+                this.recaptchaResult = null;
+                this.countdown = CONFIG.DELAY_SECONDS;
+                this.timer = null;
+            }
+
+            async init() {
+                UIController.setPath(window.location.pathname);
+                this.botCheck = BotDetector.check();
+                UIController.updateBotStatus(this.botCheck.isBot ? 'Bot Detected!' : 'Human Verified');
+
+                if (this.botCheck.isBot) {
+                    this.handleBlock();
+                    return;
+                }
+
+                UIController.updateProgress(33);
+                this.recaptchaResult = await ReCaptchaVerifier.verify();
+                Analytics.track({ ...this.botCheck, recaptchaScore: this.recaptchaResult.score });
+                this.startCountdown();
+            }
+
+            handleBlock() {
+                UIController.updateStatus('blocked', 'Access Blocked');
+                UIController.updateProgress(100);
+                Analytics.track(this.botCheck);
+                setTimeout(() => UIController.showBlocked(), 500);
+            }
+
+            startCountdown() {
+                UIController.updateStatus('verifying', 'Security Verified');
+                
+                this.timer = setInterval(() => {
+                    this.countdown--;
+                    UIController.updateCountdown(this.countdown);
+                    const progress = 33 + ((3 - this.countdown) / 3) * 67;
+                    UIController.updateProgress(progress);
+
+                    if (this.countdown <= 0) {
+                        clearInterval(this.timer);
+                        this.complete();
+                    }
+                }, 1000);
+            }
+
+            complete() {
+                UIController.updateStatus('verified', 'Redirecting...');
+                UIController.updateProgress(100);
+                setTimeout(() => window.location.href = CONFIG.TARGET_URL, 200);
+                UIController.showRedirectButton();
+            }
+        }
+
+        function manualRedirect() {
+            window.location.href = CONFIG.TARGET_URL;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const controller = new RedirectController();
+            controller.init();
+        });
+
+        document.addEventListener('contextmenu', (e) => {
+            if (!e.target.closest('button, a')) e.preventDefault();
+        });
+    </script>
+</body>
+</html>
