@@ -13,10 +13,8 @@
             --accent-cyan: #06b6d4;
             --dark-navy: #0f172a;
             --success: #10b981;
-            --warning: #f59e0b;
             --danger: #ef4444;
             --gray-100: #f1f5f9;
-            --gray-600: #475569;
             --gray-800: #1e293b;
         }
 
@@ -84,7 +82,7 @@
         .subtitle {
             color: var(--gray-600);
             font-size: 16px;
-            margin-bottom: 40px;
+            margin-bottom: 32px;
         }
 
         .security-status {
@@ -94,17 +92,10 @@
             background: var(--gray-100);
             padding: 12px 24px;
             border-radius: 50px;
-            margin-bottom: 32px;
             font-size: 14px;
             font-weight: 500;
             color: var(--gray-800);
             border: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .security-status.verifying {
-            border-color: var(--warning);
-            background: #fffbeb;
         }
 
         .security-status.verified {
@@ -119,81 +110,19 @@
             color: var(--danger);
         }
 
-        .status-icon {
-            width: 20px;
-            height: 20px;
+        .loader {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--gray-100);
+            border-top: 3px solid var(--secondary-blue);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
         }
 
-        .progress-container {
-            margin: 32px 0;
-        }
-
-        .progress-bar {
-            height: 8px;
-            background: var(--gray-100);
-            border-radius: 4px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent-cyan), var(--secondary-blue));
-            border-radius: 4px;
-            transition: width 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .progress-fill::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        .countdown {
-            font-size: 48px;
-            font-weight: 700;
-            color: var(--primary-blue);
-            margin: 24px 0;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .info-box {
-            background: linear-gradient(135deg, #eff6ff, #dbeafe);
-            border: 1px solid #bfdbfe;
-            border-radius: 16px;
-            padding: 20px;
-            margin: 24px 0;
-            text-align: left;
-        }
-
-        .info-box p {
-            color: var(--gray-800);
-            font-size: 14px;
-            margin: 8px 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .info-box strong {
-            color: var(--primary-blue);
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .btn-primary {
@@ -220,39 +149,6 @@
             box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
         }
 
-        .features {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin-top: 32px;
-            padding-top: 32px;
-            border-top: 1px solid var(--gray-100);
-        }
-
-        .feature {
-            text-align: center;
-        }
-
-        .feature-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #eff6ff, #dbeafe);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 12px;
-            font-size: 24px;
-        }
-
-        .feature-title {
-            color: var(--gray-800);
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
         .hidden {
             display: none !important;
         }
@@ -269,66 +165,32 @@
         @media (max-width: 640px) {
             .card { padding: 32px 24px; }
             h1 { font-size: 24px; }
-            .countdown { font-size: 36px; }
-            .features { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Verification Card -->
-        <div class="card" id="mainCard">
+        <!-- Loading Card (يظهر للإنسان قبل الـ Redirect) -->
+        <div class="card" id="loadingCard">
             <div class="logo">🚀</div>
             
             <h1>Secure Redirect</h1>
-            <p class="subtitle">Please wait while we verify your connection</p>
+            <p class="subtitle">Verifying your connection...</p>
             
-            <div class="security-status verifying" id="securityStatus">
-                <span class="status-icon">⏳</span>
-                <span id="statusText">Verifying Security...</span>
-            </div>
+            <div class="loader"></div>
             
-            <div class="progress-container">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-                </div>
-            </div>
-            
-            <div class="countdown" id="countdown">3</div>
-            
-            <div class="info-box">
-                <p>
-                    <span>🤖</span>
-                    <span>Bot Detection: <strong id="botStatus">Scanning...</strong></span>
-                </p>
-                <p>
-                    <span>🔗</span>
-                    <span>Path: <strong id="currentPath">/</strong></span>
-                </p>
+            <div class="security-status verified" id="statusBadge">
+                <span>✓</span>
+                <span>Verified Human</span>
             </div>
             
             <button class="btn-primary hidden" id="redirectBtn" onclick="manualRedirect()">
                 Continue to Website
                 <span>→</span>
             </button>
-            
-            <div class="features">
-                <div class="feature">
-                    <div class="feature-icon">🛡️</div>
-                    <div class="feature-title">Secure</div>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">⚡</div>
-                    <div class="feature-title">Fast</div>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">🤖</div>
-                    <div class="feature-title">Bot Safe</div>
-                </div>
-            </div>
         </div>
 
-        <!-- Blocked Card -->
+        <!-- Blocked Card (يظهر للبوت) -->
         <div class="card blocked-card hidden" id="blockedCard">
             <div class="logo" style="background: linear-gradient(135deg, #ef4444, #dc2626);">🚫</div>
             
@@ -336,19 +198,8 @@
             <p class="subtitle">Suspicious activity detected</p>
             
             <div class="security-status blocked">
-                <span class="status-icon">✕</span>
-                <span>Security Block</span>
-            </div>
-            
-            <div class="info-box" style="background: linear-gradient(135deg, #fef2f2, #fee2f2); border-color: #fecaca;">
-                <p>
-                    <span>🤖</span>
-                    <span>Bot detected: <strong>Yes</strong></span>
-                </p>
-                <p>
-                    <span>🚫</span>
-                    <span>Action: <strong>Blocked</strong></span>
-                </p>
+                <span>✕</span>
+                <span>Bot Detected</span>
             </div>
         </div>
     </div>
@@ -356,8 +207,7 @@
     <script>
         // ========== CONFIGURATION ==========
         const CONFIG = {
-            TARGET_URL: 'https://example.com', // ← CHANGE THIS TO YOUR TARGET URL
-            DELAY_SECONDS: 3
+            TARGET_URL: 'https://example.com' // ← CHANGE THIS TO YOUR TARGET URL
         };
 
         // ========== BOT DETECTION ==========
@@ -382,78 +232,33 @@
             return hasBotSignature || suspiciousCount >= 2;
         }
 
-        // ========== UI CONTROLLER ==========
-        function updateProgress(percent) {
-            document.getElementById('progressFill').style.width = percent + '%';
-        }
-
-        function updateCountdown(seconds) {
-            document.getElementById('countdown').textContent = seconds;
-        }
-
-        function updateStatus(status, text) {
-            const el = document.getElementById('securityStatus');
-            el.className = 'security-status ' + status;
-            document.getElementById('statusText').textContent = text;
-            
-            const icons = { verifying: '⏳', verified: '✓', blocked: '✕' };
-            el.querySelector('.status-icon').textContent = icons[status];
-        }
-
-        function showBlocked() {
-            document.getElementById('mainCard').classList.add('hidden');
-            document.getElementById('blockedCard').classList.remove('hidden');
-        }
-
-        function showRedirectButton() {
-            document.getElementById('redirectBtn').classList.remove('hidden');
-        }
-
         // ========== MAIN ==========
         function init() {
-            document.getElementById('currentPath').textContent = window.location.pathname;
-            
             const botDetected = isBot();
-            document.getElementById('botStatus').textContent = botDetected ? 'Bot Detected!' : 'Human Verified';
 
             if (botDetected) {
-                updateStatus('blocked', 'Access Blocked');
-                updateProgress(100);
-                setTimeout(showBlocked, 500);
+                // إظهار صفحة الحظر للبوت
+                document.getElementById('loadingCard').classList.add('hidden');
+                document.getElementById('blockedCard').classList.remove('hidden');
                 return;
             }
 
-            // Start countdown
-            let countdown = CONFIG.DELAY_SECONDS;
-            updateStatus('verifying', 'Security Verified');
-            
-            const timer = setInterval(() => {
-                countdown--;
-                updateCountdown(countdown);
-                const progress = ((CONFIG.DELAY_SECONDS - countdown) / CONFIG.DELAY_SECONDS) * 100;
-                updateProgress(progress);
-
-                if (countdown <= 0) {
-                    clearInterval(timer);
-                    complete();
-                }
-            }, 1000);
-        }
-
-        function complete() {
-            updateStatus('verified', 'Redirecting...');
-            updateProgress(100);
+            // إنسان → Redirect فوري
             setTimeout(() => {
                 window.location.href = CONFIG.TARGET_URL;
-            }, 200);
-            showRedirectButton();
+            }, 800); // تأخير بسيط 800ms باش يبان الـ Loading (اختياري)
+            
+            // زر يدوي احتياطي
+            setTimeout(() => {
+                document.getElementById('redirectBtn').classList.remove('hidden');
+            }, 1000);
         }
 
         function manualRedirect() {
             window.location.href = CONFIG.TARGET_URL;
         }
 
-        // Start
+        // Start immediately
         document.addEventListener('DOMContentLoaded', init);
         
         // Prevent right-click
